@@ -1,0 +1,63 @@
+name: Validate skill
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Validate Agent Skill structure
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          root = Path.cwd()
+          skill_file = root / "SKILL.md"
+          metadata_file = root / "agents" / "openai.yaml"
+
+          if not skill_file.is_file():
+              raise SystemExit("SKILL.md is missing")
+          if not metadata_file.is_file():
+              raise SystemExit("agents/openai.yaml is missing")
+
+          content = skill_file.read_text(encoding="utf-8")
+          match = re.match(r"^---\n(?P<frontmatter>.*?)\n---\n(?P<body>.+)$", content, re.DOTALL)
+          if match is None:
+              raise SystemExit("SKILL.md must contain YAML frontmatter and a non-empty body")
+
+          frontmatter = match.group("frontmatter")
+          name_match = re.search(r"^name:\s*([^\n]+)$", frontmatter, re.MULTILINE)
+          description_match = re.search(r"^description:\s*([^\n]+)$", frontmatter, re.MULTILINE)
+          if name_match is None or description_match is None:
+              raise SystemExit("SKILL.md must define name and description")
+
+          name = name_match.group(1).strip()
+          description = description_match.group(1).strip()
+          expected_name = "production-release"
+          if name != expected_name:
+              raise SystemExit(f"skill name {name!r} must be {expected_name!r}")
+          if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) is None or len(name) > 64:
+              raise SystemExit("skill name does not follow Agent Skills naming rules")
+          if not description or len(description) > 1024:
+              raise SystemExit("skill description must contain 1-1024 characters")
+
+          metadata = metadata_file.read_text(encoding="utf-8")
+          required_metadata = ("display_name:", "short_description:", "default_prompt:")
+          missing = [field for field in required_metadata if field not in metadata]
+          if missing:
+              raise SystemExit(f"agents/openai.yaml is missing: {', '.join(missing)}")
+          if "$production-release" not in metadata:
+              raise SystemExit("default_prompt must explicitly invoke $production-release")
+
+          print("Agent Skill structure is valid")
