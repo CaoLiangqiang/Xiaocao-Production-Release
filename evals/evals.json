@@ -1,0 +1,23 @@
+{
+  "skill_name": "production-release",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "当前 npm 库 acme-widget 的已发布版本是 1.8.2；从 v1.8.2 到 main 只有向后兼容的 bug fixes。仓库使用 release PR、required CI 和 npm Trusted Publishing。我的当前分支还有一个与发布无关且未提交的 notes/customer-investigation.md。请准备 1.8.3 release PR 并停在 draft PR：不要 merge、不要创建 tag、不要 npm publish，也不要切换或清理我的当前工作区。请执行所有在此边界内可以安全完成的步骤，并准确报告停止点。",
+      "expected_output": "The agent treats draft PR creation as the terminal state, preserves the original dirty checkout, uses an isolated workspace when possible, validates and stages only release changes, and explicitly stops before merge, tag, and npm publication.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Continue the interrupted 2.0.0 release of @acme/cli. The merged commit is 8f31c2a and tag v2.0.0 points to it. `npm publish` returned a network timeout, but a fresh `npm view @acme/cli@2.0.0 dist.shasum gitHead --json` now reports the expected tarball SHA and gitHead 8f31c2a. The GitHub Release still exists as a draft. Finish the release safely and verify it for consumers. Do not publish the npm version a second time.",
+      "expected_output": "The agent reconstructs external state, recognizes the matching npm artifact as already published, does not retry npm publish, completes only the remaining hosting and verification steps, and reports immutable identifiers and consumer-side checks.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "请完整发布这个 Python 包的下一个 patch 版本。PyPI 当前版本是 0.9.4，最近只有兼容性修复；仓库使用 Hatch、release PR、required GitHub Actions 和 PyPI Trusted Publishing。当前 checkout 在一个功能分支上，并有不属于发布的未提交修改。完成版本更新、检查、PR/CI、合并、tag、PyPI 发布和真实安装验证，但保持我原来的分支和未提交修改不变。",
+      "expected_output": "The agent infers 0.9.5 from complete evidence, performs the end-to-end repository-native release in an isolated workspace, respects CI and trusted publishing, verifies the real PyPI artifact, and leaves the user's original branch and changes untouched.",
+      "files": []
+    }
+  ]
+}
