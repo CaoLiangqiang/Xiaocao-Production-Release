@@ -1,0 +1,4 @@
+interface:
+  display_name: "Production Release"
+  short_description: "Ship verified releases end to end"
+  default_prompt: "Use $production-release to prepare, publish, and verify the next production version of this repository."
