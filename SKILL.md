@@ -1,6 +1,6 @@
 ---
 name: production-release
-description: Execute production releases end to end across repositories and package ecosystems. Use when the user asks to release, publish, ship, cut a version, create a GitHub Release, publish npm/PyPI/Cargo/Docker artifacts, or says "版本发布", "发版", or equivalent; includes versioning, changelog and docs, validation, commits and PRs, CI, merge, tags, registry publication, verification, and cleanup with minimal manual intervention.
+description: Execute production releases end to end across repositories and package ecosystems. Use when the user asks to release, publish, ship, cut a version, create a GitHub Release, publish npm/PyPI/Cargo/Docker artifacts, or says "版本发布", "发版", or equivalent; includes versioning, changelog and docs, validation, commits and PRs, CI, merge, tags, registry publication, verification, and cleanup with minimal manual intervention. Do not use for ordinary commit, push, or PR work unrelated to a release, or for Git explanations.
 ---
 
 # Production Release
@@ -15,7 +15,7 @@ Own the release outcome instead of returning a checklist. Treat an explicit requ
 - Minimize user work. Do not ask the user to run routine commands that Codex can run.
 - Prefer existing repository release policy and automation over inventing a parallel process.
 - Preserve unrelated worktree changes and external state. Never silently include unrelated files.
-- Keep the user informed during long-running checks and publication, but do not stop for non-blocking preferences.
+- Keep the user informed during long-running checks and publication, and report durable identifiers or URLs as external state is created, but do not stop for non-blocking preferences.
 - Complete all possible preparation before requesting an unavoidable human gate.
 
 An explicit release request does not authorize unrelated repositories, paid services, destructive history rewrites, package unpublishing, or new legal/public-disclosure decisions.
@@ -30,9 +30,11 @@ Before editing or publishing:
 4. Locate every authoritative version source: manifests, lockfiles, source constants, schemas, docs, examples, and changelog.
 5. Identify configured registries and delivery surfaces: GitHub/GitLab releases, npm, PyPI, crates.io, container registries, binaries, installers, or app stores.
 6. Inspect existing release automation, trusted publishers, signing, branch protection, and required checks.
-7. Confirm which worktree changes belong to the release. If mixed or ambiguous, isolate known release changes and ask only when ownership cannot be determined safely.
+7. Inspect staged, unstaged, untracked, and already-committed unreleased changes. Confirm that the scope being reviewed is exactly the scope that will be staged, packaged, and published. If ownership is mixed or ambiguous, isolate known release changes and ask only when it cannot be determined safely.
 
 Use platform-specific publishing skills and connectors when available. For GitHub branch, commit, push, and PR work, use the applicable GitHub publishing workflow rather than recreating it.
+
+Before the first mutation, briefly report the resolved release plan: release scope, intended version or inference, source branch and commit, delivery channels, Git review path, planned checks, and requested stopping point. Continue without a separate confirmation when the plan follows repository evidence and the user's explicit request; ask only when Section 8 identifies a genuine human gate.
 
 ## 2. Determine the version
 
@@ -67,7 +69,7 @@ Do not select a new license, make a private repository public, or expose previou
 
 ## 4. Run proportional quality gates
 
-Use a clean or deterministic dependency installation where supported. Run all repository-defined checks plus release-specific checks:
+Use a clean or deterministic dependency installation where supported. Derive validation commands from repository instructions, manifests, task runners, and CI configuration. If no trustworthy command exists for a relevant check, report it as unverified with the reason instead of inventing one. Run all repository-defined checks plus release-specific checks:
 
 - formatting and whitespace checks;
 - type checking, linting, unit, integration, and end-to-end tests;
@@ -87,9 +89,9 @@ Never bypass, suppress, or reinterpret a failed required gate as success. Diagno
 
 Unless the repository defines another workflow:
 
-1. Create a focused release branch from the current default branch.
+1. Refresh remote refs, verify the latest default-branch commit, and create a focused release branch from that commit. Use a user-provided branch name when given; otherwise follow repository convention or derive a concise name from the release scope.
 2. Stage only intended files and inspect the full staged diff.
-3. Commit concise release-preparation changes.
+3. Commit concise release-preparation changes using a user-provided message or repository convention; otherwise derive it from the staged diff.
 4. Push to the primary configured release remote and required mirrors.
 5. Create a draft PR with scope, user impact, safety boundaries, validation evidence, and known limitations.
 6. Wait for required CI. Fix failures and push follow-up commits.
@@ -98,9 +100,13 @@ Unless the repository defines another workflow:
 
 Treat an explicit end-to-end release request as authorization for this normal PR and merge flow. Do not merge when review or branch policy explicitly requires another human approval.
 
+Before pushing, recheck status and diff after validation. If a formatter, generator, build, or test changed files, include only intended changes and rerun affected checks so the exact validated commit is the one pushed. If branch updates or release changes conflict, resolve only when the intended result is unambiguous from repository evidence; otherwise preserve recoverability, list the conflicted files, and request one concrete decision.
+
 ## 6. Publish artifacts
 
 Create the tag only after the release commit is on the default branch. Prefer annotated or repository-standard signed tags. Require the tag version to match all manifests and runtime version output.
+
+Treat a timeout or ambiguous response from a remote, hosting provider, or registry as unknown state. Query the external system before retrying so an operation that actually succeeded is not repeated.
 
 Use the repository's configured delivery mechanism:
 
