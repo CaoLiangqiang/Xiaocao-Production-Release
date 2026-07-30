@@ -44,8 +44,9 @@ jobs:
 
           name = name_match.group(1).strip()
           description = description_match.group(1).strip()
-          if name != root.name:
-              raise SystemExit(f"skill name {name!r} must match directory name {root.name!r}")
+          expected_name = "production-release"
+          if name != expected_name:
+              raise SystemExit(f"skill name {name!r} must be {expected_name!r}")
           if re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name) is None or len(name) > 64:
               raise SystemExit("skill name does not follow Agent Skills naming rules")
           if not description or len(description) > 1024:
