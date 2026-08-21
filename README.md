@@ -53,6 +53,19 @@ npx skills add https://github.com/CaoLiangqiang/Xiaocao-Production-Release/tree/
 
 Codex 通常会自动发现 Skill。若未出现，请重启 Codex 后使用 `/skills` 查看，也可以直接用 `$production-release` 显式调用。
 
+### 个人源码联动
+
+Skills CLI 安装适合使用不可变正式版本。若这个仓库同时是你在多台工作电脑上的个人配置源，可以从长期保留的 checkout 建立用户级链接，让本地改进直接作用于当前环境：
+
+```bash
+bash scripts/configure-user-skill.sh --check
+bash scripts/configure-user-skill.sh --install
+```
+
+脚本使用 Codex 当前的用户级目录 `~/.agents/skills/production-release`。已有目标和旧的 `~/.codex/skills/production-release` 安装会先备份到 `~/.local/state/ai-build-up/backups/`，避免同名 Skill 被重复发现；重复执行保持幂等。源码联动会让未提交修改也立即影响本机 Skill，适合维护和验证，不应代替面向其他用户的 tag 与正式发布。
+
+如果 checkout 被误删，用户级链接会失效。重新克隆到原路径即可恢复；路径发生变化时重新运行 `--install`。日常使用中发现的稳定改进应回到 `SKILL.md` 或相关资源，经过项目验证、Git 审阅和正式发布后，再由其他电脑拉取或升级，形成可追踪的优化闭环。
+
 ## 使用
 
 完整发布下一个版本：
@@ -127,6 +140,8 @@ production-release/
 ├── .github/workflows/validate.yml # Agent Skill 结构 CI 校验
 ├── agents/openai.yaml             # Codex 界面信息和默认提示
 ├── assets/readme/hero.svg         # README 视觉标题与发布链路概览
+├── scripts/configure-user-skill.sh # 个人源码联动检查与安装
+├── tests/                          # 链接安装行为测试
 ├── .gitignore                     # 本地过程文件忽略规则
 ├── LICENSE                        # MIT 许可证
 ├── README.md                      # 用户与维护说明
@@ -135,7 +150,7 @@ production-release/
 
 本项目本身不包含守护进程、运行时服务、生产依赖或需要编译的可执行文件。`SKILL.md` 是唯一执行入口，`agents/openai.yaml` 提供 Codex 界面名称、简述和默认调用提示；不可变 Git tag 和 GitHub Release 标识正式版本，Skills CLI 负责将选定版本安装到规范目录。
 
-每次 PR 和向 `main` 的推送都会执行 `Validate skill` 工作流，检查 `SKILL.md` 的名称、描述与正文，以及 `agents/openai.yaml` 的关键字段。修改发布行为时，请同时说明成功路径、失败路径和恢复方式，不要为单一仓库硬编码分支名、合并策略、包管理器或托管平台。
+每次 PR 和向 `main` 的推送都会执行 `Validate skill` 工作流，检查 `SKILL.md` 的名称、描述与正文、`agents/openai.yaml` 的关键字段，以及源码联动脚本的语法和备份/迁移行为。修改发布行为时，请同时说明成功路径、失败路径和恢复方式，不要为单一仓库硬编码分支名、合并策略、包管理器或托管平台。
 
 </details>
 
